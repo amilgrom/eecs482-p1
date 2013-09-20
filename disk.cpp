@@ -65,24 +65,31 @@ void servicer(void* a) {
 	printLine("Servicer started");
 	int currentAddrs = 0;
 	int requesterID = -1;
+	multimap<int, int>::iterator smlr, lrgr;
 	while (true) {
 		queueMutex.lock();
 		requesterCountMutex.lock();
-		while (((queue.size() < requesterCount) && (queue.size() < maxQueueSize)) || (queue.size() == 0)) {
+		while ((queue.size() == 0) || ((queue.size() < requesterCount) && (queue.size() < maxQueueSize))) {
 			requesterCountMutex.unlock();
 			servicerWait.wait(queueMutex);
 			requesterCountMutex.lock();
 		}
 		requesterCountMutex.unlock();
 		//grab and remove next disk
-		multimap<int, int>::iterator smlr = queue.lower_bound(currentAddrs);
-		if (smlr->first == currentAddrs) { //point to equivalent
-			printLine("lowerBound: " + to_string(smlr->first));
+		smlr = queue.lower_bound(currentAddrs);
+		if (queue.size() == 1) {
+			smlr = queue.begin();
+			printLine("Size Of One: " + to_string(smlr->first));
+			requesterID = smlr->second;
+			queue.erase(smlr);
+		}
+		else if (smlr->first == currentAddrs) { //point to equivalent
+			printLine("Perfect Match: " + to_string(smlr->first));
 			requesterID = smlr->second;
 			queue.erase(smlr);
 		}
 		else {
-			multimap<int, int>::iterator lrgr = smlr;
+			lrgr = smlr;
 			int lrgrDiff = -1;
 			int smlrDiff = -1;
 			if (smlr == queue.begin()) {
@@ -92,10 +99,9 @@ void servicer(void* a) {
 			}
 			else if (smlr == queue.end()) {
 				smlr--;
-				smlr--;
-				smlrDiff = 1000 - smlr->first + currentAddrs;
-				lrgr--;
-				lrgrDiff = 1000 - lrgr->first + currentAddrs;
+				smlrDiff = currentAddrs - smlr->first;
+				lrgr = queue.begin();
+				lrgrDiff = 1000 - currentAddrs + lrgr->first;
 			}
 			else {
 				smlr--;
