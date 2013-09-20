@@ -154,15 +154,16 @@ void requester(void* a) {
 			queue.insert(pair<int, int>(addr, requesterID));
 			requesterPrint(requesterID, addr);
 			servicerWait.signal();
-			bool requestInQueue = true;
-			while (requestInQueue) {
+//			bool requestInQueue = true;
+//			while (requestInQueue) {
 				requesterWait[requesterID]->wait(queueMutex);
 //				requesterWait.wait(queueMutex);
-				requestInQueue = false;
-				multimap<int, int>::iterator it = queue.lower_bound(addr);
-				while (!requestInQueue && (it->first == addr)) {
-					if (it->second == requesterID) requestInQueue = true;
-				}
+//				requestInQueue = false;
+//				multimap<int, int>::iterator it = queue.lower_bound(addr);
+//				while (!requestInQueue && (it->first == addr)) {
+//					if (it->second == requesterID) requestInQueue = true;
+//					else it++;
+//				}
 			}
 			queueMutex.unlock();
 		}
