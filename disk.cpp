@@ -47,22 +47,22 @@ int main(int argc, char **args) {
 		fileNames->push_back(args[i]);
 	}
 	cpu::boot((thread_startfunc_t) scheduler, (void *) fileNames, 0);
-	printLine("MAIN FINISHED");
+//	printLine("MAIN FINISHED");
 	return 0;
 }
 
 void scheduler(void* a) {
-	printLine("Scheduler started");
+//	printLine("Scheduler started");
 	vector<char *> *fileNames = (vector<char *> *)a;
 	for (int i = 0; i < fileNames->size(); i++) {
 		thread t1 ((thread_startfunc_t) requester, (void *) fileNames->at(i));
 	}
 	thread t2 ((thread_startfunc_t) servicer, (void *) 0);
-	printLine("Scheduler finished");
+//	printLine("Scheduler finished");
 }
 
 void servicer(void* a) {
-	printLine("Servicer started");
+//	printLine("Servicer started");
 	int currentAddrs = 0;
 	int requesterID = -1;
 	multimap<int, int>::iterator smlr, lrgr;
@@ -79,12 +79,12 @@ void servicer(void* a) {
 		smlr = queue.lower_bound(currentAddrs);
 		if (queue.size() == 1) {
 			smlr = queue.begin();
-			printLine("Size Of One: " + to_string(smlr->first));
+//			printLine("Size Of One: " + to_string(smlr->first));
 			requesterID = smlr->second;
 			queue.erase(smlr);
 		}
 		else if (smlr->first == currentAddrs) { //point to equivalent
-			printLine("Perfect Match: " + to_string(smlr->first));
+//			printLine("Perfect Match: " + to_string(smlr->first));
 			requesterID = smlr->second;
 			queue.erase(smlr);
 		}
@@ -108,11 +108,11 @@ void servicer(void* a) {
 				smlrDiff = currentAddrs - smlr->first;
 				lrgrDiff = lrgr->first - currentAddrs;
 			}
-			printLine("currentTrack: " + to_string(currentAddrs));
-			printLine("lowerBound: " + to_string(smlr->first));
-			printLine("upperBound: " + to_string(lrgr->first));
-			printLine("smlrDiff: " + to_string(smlrDiff));
-			printLine("lrgrDiff: " + to_string(lrgrDiff));
+//			printLine("currentTrack: " + to_string(currentAddrs));
+//			printLine("lowerBound: " + to_string(smlr->first));
+//			printLine("upperBound: " + to_string(lrgr->first));
+//			printLine("smlrDiff: " + to_string(smlrDiff));
+//			printLine("lrgrDiff: " + to_string(lrgrDiff));
 
 			if (smlrDiff < lrgrDiff) {
 				currentAddrs = smlr->first;
@@ -129,12 +129,12 @@ void servicer(void* a) {
 		requesterWait.broadcast();
 		queueMutex.unlock();
 	}
-	printLine("Servicer finished");
+//	printLine("Servicer finished");
 }
 
 void requester(void* a) {
 	int requesterID = incRequesterCount();
-	printLine("Requester " + to_string(requesterID) + " started");
+//	printLine("Requester " + to_string(requesterID) + " started");
 	char *fileName = (char *) a;
 	string diskAddr = "";
 	ifstream ifs(fileName);
@@ -143,7 +143,7 @@ void requester(void* a) {
 			int addr = atoi(diskAddr.c_str());
 			queueMutex.lock();
 			while (queue.size() >= maxQueueSize) {
-				printLine("Requester " + to_string(requesterID) + " waiting on queue");
+//				printLine("Requester " + to_string(requesterID) + " waiting on queue");
 				requesterWait.wait(queueMutex);
 			}
 			queue.insert(pair<int, int>(addr, requesterID));
@@ -167,7 +167,7 @@ void requester(void* a) {
 	}
 	decRequesterCount();
 	servicerWait.signal();
-	printLine("requester " + to_string(requesterID) + " finished");
+//	printLine("requester " + to_string(requesterID) + " finished");
 }
 
 int incRequesterCount() {
