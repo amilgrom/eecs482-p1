@@ -28,7 +28,8 @@ mutex stdOutMutex;
 
 //cvs
 cv servicerWait;
-cv requesterWait;
+vector<cv*> requesterWait;
+//cv requesterWait;
 
 //functions
 void scheduler(void* a);
@@ -126,7 +127,8 @@ void servicer(void* a) {
 			}
 		}
 		servicerPrint(requesterID, currentAddrs);
-		requesterWait.broadcast();
+		requesterWait[requesterID]->signal();
+//		requesterWait.broadcast();
 		queueMutex.unlock();
 	}
 //	printLine("Servicer finished");
@@ -134,6 +136,8 @@ void servicer(void* a) {
 
 void requester(void* a) {
 	int requesterID = incRequesterCount();
+	cv *waiter = new cv;
+	requesterWait.push_back(waiter);
 //	printLine("Requester " + to_string(requesterID) + " started");
 	char *fileName = (char *) a;
 	string diskAddr = "";
@@ -144,14 +148,16 @@ void requester(void* a) {
 			queueMutex.lock();
 			while (queue.size() >= maxQueueSize) {
 //				printLine("Requester " + to_string(requesterID) + " waiting on queue");
-				requesterWait.wait(queueMutex);
+				requesterWait[requesterID]->wait(queueMutex);
+//				requesterWait.wait(queueMutex);
 			}
 			queue.insert(pair<int, int>(addr, requesterID));
 			requesterPrint(requesterID, addr);
 			servicerWait.signal();
 			bool requestInQueue = true;
 			while (requestInQueue) {
-				requesterWait.wait(queueMutex);
+				requesterWait[requesterID]->wait(queueMutex);
+//				requesterWait.wait(queueMutex);
 				requestInQueue = false;
 				multimap<int, int>::iterator it = queue.lower_bound(addr);
 				while (!requestInQueue && (it->first == addr)) {
