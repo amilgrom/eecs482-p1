@@ -38,7 +38,7 @@ cv requesterWait;
 void scheduler(void* a);
 void servicer(void *a);
 void requester(void *a);
-//void printLine(string str);
+void printLine(string str);
 
 int main(int argc, char **args) {
 	arguments = args;
@@ -83,11 +83,8 @@ void servicer(void* a) {
 		int smlDist = 10001;
 		for (int i = 0; i < numFiles; i++) {
 			if(queue[i] != -1) {
-				int dist = queue[i] - currentAddrs;
-				if (dist < 0) {
-					dist += 1000;
-				}
-//				printLine("requester " + to_string(i) + " dist " + to_string(dist));
+				int dist = abs(queue[i] - currentAddrs);
+//				printLine("Requester " + to_string(i) + " dist " + to_string(dist));
 				if (dist < smlDist) {
 					smlDist = dist;
 					index = i;
@@ -148,8 +145,8 @@ void requester(void* a) {
 //	printLine("requester " + to_string(requesterID) + " finished");
 }
 
-//void printLine(string str) {
-//	stdOutMutex.lock();
-//	cout << str << endl;
-//	stdOutMutex.unlock();
-//}
+void printLine(string str) {
+	stdOutMutex.lock();
+	cout << ">>>" << str << endl;
+	stdOutMutex.unlock();
+}
